@@ -102,7 +102,7 @@ function Chart({ fundingData, dataOptions, handleCircleClick }) {
           z(Math.sqrt(d.value.fundingAmount)) :
           10 * d.value.fundingRounds.length;
       })
-      .style('fill', 'gray')
+      .style('fill', () => 'hsl(' + Math.random() * 360 + ',100%,50%)')
       .style('opacity', '0.5')
 
     // append text anchor to circles displaying their z (size) value
