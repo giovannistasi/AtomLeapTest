@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Chart from './components/Chart';
+import DetailsModal from './components/DetailsModal';
 import 'antd/dist/antd.css';
 import { Select } from 'antd';
 const { Option } = Select;
 
 function App() {
   const [fundingData, setFundingData] = useState([]);
-  const [dataOptions, setDataOptions] = useState('fundingAmount')
+  const [dataOptions, setDataOptions] = useState('fundingAmount');
+  const [tableData, setTableData] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     fetch('http://demo0377384.mockable.io/funding-test')
@@ -21,6 +24,15 @@ function App() {
     setDataOptions(value);
   }
 
+  function handleCircleClick(d) {
+    setTableData(d.value.fundingRounds);
+    toggleModal();
+  }
+
+  function toggleModal() {
+    setModalVisible(!modalVisible);
+  }
+
   return (
     <div className="app-container">
       <h1>Funding by Industry Analytics</h1>
@@ -31,7 +43,12 @@ function App() {
           <Option value="fundingRounds">Number of funding rounds</Option>
         </Select>
       </div>
-      <Chart fundingData={fundingData} dataOptions={dataOptions}></Chart>
+      <Chart fundingData={fundingData} dataOptions={dataOptions} handleCircleClick={handleCircleClick}></Chart>
+      <DetailsModal
+        visible={modalVisible}
+        toggleModal={toggleModal}
+        data={tableData}
+      />
     </div>
   )
 }

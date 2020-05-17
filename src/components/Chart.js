@@ -1,34 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import * as d3 from 'd3';
-import { Table } from 'antd';
-
 
 function Chart({ fundingData, dataOptions, handleCircleClick }) {
-  const [tableData, setTableData] = useState([]);
-
-  // define column titles
-  const columns = [
-    {
-      title: 'id',
-      dataIndex: 'id',
-    },
-    {
-      title: 'Category',
-      dataIndex: 'category',
-    },
-    {
-      title: 'Location',
-      dataIndex: 'location',
-    },
-    {
-      title: 'Funding Amount',
-      dataIndex: 'fundingAmount',
-    },
-    {
-      title: 'Announced Date',
-      dataIndex: 'announcedDate',
-    }
-  ];
 
   useEffect(() => {
     const data = groupData(fundingData);
@@ -176,41 +149,10 @@ function Chart({ fundingData, dataOptions, handleCircleClick }) {
     // add click event on circles
     svg.selectAll('circle')
       .on('click', handleCircleClick);
-
-    function equalToEventTarget() {
-      return this == d3.event.target;
-    }
-
-    d3.select('body')
-      .on('click', () => {
-        const outside = svg.selectAll('circle').filter(equalToEventTarget).empty();
-        if (outside) {
-          svg.selectAll('circle')
-            .style('fill', 'gray')
-          setTableData([]);
-        }
-      });
-
-    function handleCircleClick(d) {
-      const circle = d3.select(this);
-      if (circle.style('fill') === 'blue') {
-        circle.style('fill', 'gray');
-        setTableData([]);
-      } else {
-        svg.selectAll('circle')
-          .style('fill', 'gray')
-        circle.style('fill', 'blue');
-        setTableData(d.value.fundingRounds);
-      }
-    }
-
   };
 
   return (
-    <div>
-      <div id="chart-container"></div>
-      {tableData.length ? <Table columns={columns} dataSource={tableData} pagination={false}></Table> : null}
-    </div>
+    <div id="chart-container"></div>
   )
 }
 
