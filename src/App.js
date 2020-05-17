@@ -1,26 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import Chart from './components/Chart';
+
 
 function App() {
+  const [fundingData, setFundingData] = useState([]);
+
+  useEffect(() => {
+    fetch('http://demo0377384.mockable.io/funding-test')
+      .then(res => res.json())
+      .then(data => {
+        setFundingData(data);
+      })
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Chart fundingData={fundingData}></Chart>
+  )
 }
 
 export default App;
