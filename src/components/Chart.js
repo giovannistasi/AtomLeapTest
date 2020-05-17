@@ -27,7 +27,7 @@ function Chart({ fundingData }) {
   function drawChart(nestedData) {
     // remove previous svg before drawing new one
     d3.select('#chart-container > svg').remove();
-    
+
     // declare chart size
     const margin = { top: 70, right: 20, bottom: 60, left: 70 },
       width = 710 - margin.left - margin.right,
@@ -82,6 +82,22 @@ function Chart({ fundingData }) {
       })
       .style('fill', 'gray')
       .style('opacity', '0.5')
+
+    // append text anchor to circles displaying their z (size) value
+    circles.append('text');
+    circles.selectAll('text')
+      .attr('text-anchor', 'middle')
+      .attr('alignment-baseline', 'middle')
+      .text(d => {
+        return d3.format('.2s')(d.value.fundingAmount)
+      })
+      .attr('x', d => x(d.key))
+      .attr('y', d => {
+        return y(d.value.fundingRounds.length)
+      })
+      .attr('class', 'bubble-text')
+      .attr('fill', 'black')
+      .style('opacity', '0.8');
 
     // append label to x axis
     svg.append('text')
