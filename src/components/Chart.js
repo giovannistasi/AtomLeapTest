@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-function Chart({ fundingData }) {
+function Chart({ fundingData, dataOptions }) {
+
   useEffect(() => {
-    const nestedData = groupData(fundingData);
-    drawChart(nestedData);
-  }, [fundingData])
+    const data = groupData(fundingData);
+    drawChart(data);
+  }, [fundingData, dataOptions])
 
   // group the data by category and calculate the total funding
   function groupData(data) {
@@ -18,8 +19,11 @@ function Chart({ fundingData }) {
         }
       })
       .entries(data)
+      // sort circles in ascending order based on the type of data selected
       .sort((a, b) => {
-        return a.value.fundingRounds.length - b.value.fundingRounds.length;
+        return dataOptions === 'fundingAmount' ?
+          a.value.fundingRounds.length - b.value.fundingRounds.length :
+          a.value.fundingAmount - b.value.fundingAmount;
       });
     return nestedData;
   }
@@ -52,16 +56,30 @@ function Chart({ fundingData }) {
       .attr('transform', 'translate(0,' + height + ')')
       .call(d3.axisBottom(x));
 
-    // define y axis
-    const y = d3.scaleLinear()
-      .domain([0, 10])
-      .range([height, 0]);
-    svg.append('g')
-      .call(d3.axisLeft(y));
+    // define y axis, linear if displaying number of rounds or log if displaying funding amount
+    const y = dataOptions === 'fundingAmount' ?
+      d3.scaleLinear()
+        .domain([0, 10])
+        .range([height, 0]) :
+      d3.scaleLog()
+        .domain([10000, 50000000])
+        .range([height, 0])
+        .base(10);
 
-    // define size of bubble
+    // modify tick values and format depending on type of data selected
+    if (dataOptions === 'fundingAmount') {
+      svg.append('g')
+        .call(d3.axisLeft(y))
+    } else {
+      svg.append('g')
+        .call(d3.axisLeft(y)
+          .tickValues([10000, 100000, 1000000, 10000000, 50000000])
+          .tickFormat(d => d3.format('.2s')(d)));
+    }
+
+    // define size of bubble depending on type of data selected
     const z = d3.scaleLinear()
-      .domain([0, 80])
+      .domain(dataOptions === 'fundingAmount' ? [0, 80] : [0, 10])
       .range([0, 1]);
 
     // create circles
@@ -75,10 +93,14 @@ function Chart({ fundingData }) {
     circles.selectAll('circle')
       .attr('cx', d => x(d.key))
       .attr('cy', d => {
-        return y(d.value.fundingRounds.length)
+        return dataOptions === 'fundingAmount' ?
+          y(d.value.fundingRounds.length) :
+          y(d.value.fundingAmount);
       })
       .attr('r', d => {
-        return z(Math.sqrt(d.value.fundingAmount))
+        return dataOptions === 'fundingAmount' ?
+          z(Math.sqrt(d.value.fundingAmount)) :
+          10 * d.value.fundingRounds.length;
       })
       .style('fill', 'gray')
       .style('opacity', '0.5')
@@ -89,11 +111,15 @@ function Chart({ fundingData }) {
       .attr('text-anchor', 'middle')
       .attr('alignment-baseline', 'middle')
       .text(d => {
-        return d3.format('.2s')(d.value.fundingAmount)
+        return dataOptions === 'fundingAmount' ?
+          d3.format('.2s')(d.value.fundingAmount) :
+          d.value.fundingRounds.length;
       })
       .attr('x', d => x(d.key))
       .attr('y', d => {
-        return y(d.value.fundingRounds.length)
+        return dataOptions === 'fundingAmount' ?
+          y(d.value.fundingRounds.length) :
+          y(d.value.fundingAmount);
       })
       .attr('class', 'bubble-text')
       .attr('fill', 'black')
@@ -115,7 +141,9 @@ function Chart({ fundingData }) {
       .attr('y', -50)
       .attr('transform', 'rotate(-90)')
       .attr('text-anchor', 'middle')
-      .text('# of funding rounds')
+      .text(dataOptions === 'fundingAmount' ?
+        '# of funding rounds' :
+        'Funding amount')
       .style('fill', 'gray')
   }
 
